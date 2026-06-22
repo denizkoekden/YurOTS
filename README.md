@@ -15,7 +15,7 @@ fix the toolchain so the classic YurOTS server builds and runs on modern platfor
 
 The original sources only built with Dev-C++ / MinGW (Windows). They now build
 unchanged-in-behaviour with modern GCC / Clang / MSVC via **CMake**, with **Lua 5.0**
-vendored from this repo. See **[MODERNIZATION.md](MODERNIZATION.md)** for the full list
+vendored from this repo. See **[MODERNIZATION.md](ots/MODERNIZATION.md)** for the full list
 of changes, assumptions, and the fixed pre-existing bugs (including a 64-bit map/items
 loader bug and a corrupted accented-letter table).
 
@@ -44,6 +44,6 @@ Linux/macOS filesystems.
 > (party/trade spam, depot/parcel overflow, etc.); the modernization **preserves**
 > them rather than silently changing behaviour. Two genuine bugs that the old 32-bit
 > Windows build hid were fixed because they are deterministic on a modern 64-bit
-> toolchain (see [MODERNIZATION.md](MODERNIZATION.md) §4).
+> toolchain (see [MODERNIZATION.md](ots/MODERNIZATION.md) §4).
 
-See **[DEPLOYMENT.md](DEPLOYMENT.md)** for how to run it.
+See **[DEPLOYMENT.md](ots/DEPLOYMENT.md)** for how to run it.
