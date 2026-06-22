@@ -2713,7 +2713,7 @@ void Protocol76::AddCreature(NetworkMessage &msg,const Creature *creature, bool 
 		msg.AddString(creature->getName());
 	}
 
-	msg.AddByte(std::max(1LL, creature->health*100/creature->healthmax));
+	msg.AddByte(std::max<int64_t>(1, creature->health*100/creature->healthmax)); // modernization: explicit int64_t so std::max's two args share a type (int64_t is `long` on LP64 Linux, `long long` on macOS)
 
 	msg.AddByte((unsigned char)creature->getDirection());
 
@@ -2889,7 +2889,7 @@ void Protocol76::AddCreatureHealth(NetworkMessage &msg,const Creature *creature)
 {
 	msg.AddByte(0x8C);
 	msg.AddU32(creature->getID());
-	msg.AddByte(std::max(1LL, creature->health*100/creature->healthmax));
+	msg.AddByte(std::max<int64_t>(1, creature->health*100/creature->healthmax)); // modernization: explicit int64_t so std::max's two args share a type (int64_t is `long` on LP64 Linux, `long long` on macOS)
 }
 
 void Protocol76::AddRemoveThing(NetworkMessage &msg, const Position &pos,unsigned char stackpos){

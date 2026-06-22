@@ -18,6 +18,8 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////
 #ifdef TLM_HOUSE_SYSTEM
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstring>
 #include "houses.h"
 #include "luascript.h"
 #include "game.h"

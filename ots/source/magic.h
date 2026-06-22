@@ -21,6 +21,8 @@
 #ifndef __MAGIC_H__
 #define __MAGIC_H__
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "position.h"
 #include "item.h"
 #include <map>

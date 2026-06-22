@@ -22,6 +22,8 @@
 #ifndef __SPAWN_H
 #define __SPAWN_H
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "tile.h"
 #include "position.h"
 #include "monster.h"

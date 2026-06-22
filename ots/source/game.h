@@ -23,6 +23,8 @@
 #define __OTSERV_GAME_H
 
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include <queue>
 #include <vector>
 #include <set>

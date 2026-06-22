@@ -19,6 +19,8 @@
 //////////////////////////////////////////////////////////////////////
 
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstring>
 #include "definitions.h"
 
 #include <string>

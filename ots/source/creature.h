@@ -23,6 +23,8 @@
 #define __creature_h
 
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "thing.h"
 #include "position.h"
 #include "container.h"

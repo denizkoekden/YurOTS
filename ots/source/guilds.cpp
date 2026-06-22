@@ -18,6 +18,8 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////
 #ifdef YUR_GUILD_SYSTEM
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstring>
 #include "guilds.h"
 #include "player.h"
 #include "luascript.h"

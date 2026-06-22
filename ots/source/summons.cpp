@@ -18,6 +18,8 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////
 #ifdef TR_SUMMONS
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstring>
 #include "summons.h"
 #include "luascript.h"
 #include <libxml/xmlmemory.h>

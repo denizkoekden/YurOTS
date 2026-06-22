@@ -21,6 +21,8 @@
 #ifndef __OTSERV_ITEMLOADER_H__
 #define __OTSERV_ITEMLOADER_H__
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "fileloader.h"
 
 typedef unsigned char attribute_t;

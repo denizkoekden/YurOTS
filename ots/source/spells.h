@@ -23,6 +23,8 @@
 #define __spells_h_
 
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "game.h"
 #include "luascript.h"
 #include "player.h"

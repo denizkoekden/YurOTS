@@ -26,6 +26,8 @@
 // modernization: __gnu_cxx::hash_map / stdext::hash_map (deprecated, gone from
 // modern standard libraries) -> std::unordered_map (same average-O(1) lookup; no
 // call site depends on iteration order).
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include <unordered_map>
 #include <string>
 #include "const76.h"

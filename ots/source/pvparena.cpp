@@ -18,6 +18,8 @@
 // Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //////////////////////////////////////////////////////////////////////
 #ifdef YUR_PVP_ARENA
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstring>
 #include "pvparena.h"
 #include "game.h"
 #include "luascript.h"

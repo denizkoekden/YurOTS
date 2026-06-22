@@ -21,6 +21,8 @@
 
 #ifndef SUMMONS_H
 #define SUMMONS_H
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include <string>
 #include <map>
 

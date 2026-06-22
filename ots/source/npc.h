@@ -23,6 +23,8 @@
 #define __npc_h_
 
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "creature.h"
 #include "game.h"
 #include "luascript.h"

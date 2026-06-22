@@ -21,6 +21,9 @@
 #ifndef __OTSERV_FILELOADER_H__
 #define __OTSERV_FILELOADER_H__
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include "stdio.h"
 

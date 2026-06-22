@@ -1,0 +1,26 @@
+# YurOTS (Tibia 7.6) — one-command server. No database: YurOTS is file-based.
+#
+#   docker compose up --build
+#
+# Connect a Tibia 7.6 client to 127.0.0.1:7171 (login and game share one port).
+# For remote players, set SERVER_IP to your public/host IP below.
+
+services:
+  server:
+    build:
+      context: .
+    image: yurots:0.9.4
+    restart: unless-stopped
+    environment:
+      SERVER_IP: "127.0.0.1"   # <- set to your public/host IP for remote clients
+      # WORLD_NAME: "YurOTS"
+      # WORLD_TYPE: "pvp"
+    ports:
+      - "7171:7171"            # login + game (this engine serves both on one port)
+    volumes:
+      # Persist player/account saves (and let you edit map/scripts) across restarts.
+      # On first start the volume is seeded from the image's data/ tree.
+      - yurots-data:/opt/yurots/data
+
+volumes:
+  yurots-data:

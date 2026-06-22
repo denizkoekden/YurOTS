@@ -23,6 +23,8 @@
 #define __ACCOUNT_H__
 
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include <list>
 #include <string>
 

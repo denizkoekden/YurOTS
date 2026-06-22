@@ -1,9 +1,45 @@
 # Deployment
 
-How to run the modernized **YurOTS** server (Tibia 7.6). YurOTS is **file-based**
-(XML accounts/players, OTBM map) — there is no database to provision.
+Four ways to run the modernized **YurOTS** server (Tibia 7.6). YurOTS is
+**file-based** (XML accounts/players, OTBM map) — there is no database to provision.
 
-## Build from source and run
+> Paths below are relative to the **repository root** (the Docker, Pterodactyl and CI
+> files live there); the CMake project itself is under `ots/`.
+
+## 1. Docker Compose (one command)
+
+```bash
+docker compose up --build
+```
+
+- Builds the server and runs it; connect a **Tibia 7.6** client to `127.0.0.1:7171`
+  (login and game share one port).
+- For remote players, set `SERVER_IP` in [docker-compose.yml](../docker-compose.yml)
+  to your public/host IP (`WORLD_NAME` / `WORLD_TYPE` are also patchable via env).
+- Player/account saves persist in the `yurots-data` volume (seeded from the image's
+  `data/` on first start). The server runs as a non-root user (the engine refuses root).
+
+## 2. Pterodactyl egg
+
+[`pterodactyl/egg-yurots.json`](../pterodactyl/egg-yurots.json) — self-contained, no
+external database. It **builds from source on install** into the server's file area, so
+`config.lua` and the entire `data/` tree (scripts, map, monsters, NPCs, …) are editable
+via the panel file manager and SFTP.
+
+Common settings are exposed as **panel variables** (public IP, world name, world type,
+max players, exp rate). They are applied to `config.lua` on each start via
+[`pterodactyl/start.sh`](../pterodactyl/start.sh) — **only when set**, so any value you
+leave blank keeps whatever you edited in `config.lua` directly. The listen port follows
+the Pterodactyl allocation; `GIT_REF` selects the branch/tag to build (default `master`).
+
+## 3. Prebuilt release packages
+
+Pushing a `v*` tag triggers [`.github/workflows/release.yml`](../.github/workflows/release.yml),
+which builds self-contained per-OS `.zip` packages for **Windows, Linux and macOS**
+(MinGW / GCC / Clang) and publishes them as a GitHub Release. Download, unzip, and run
+`./run.sh` (or `run.bat` / `./YurOTS`). See the package's `README-PACKAGE.txt`.
+
+## 4. Build from source and run
 
 ```bash
 # Linux  : sudo apt install cmake g++ libxml2-dev libboost-regex-dev
@@ -13,25 +49,17 @@ cd ots
 cmake -S . -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo
 cmake --build build --parallel
 cmake --install build --prefix dist     # dist/ = binary + config.lua + data/
-cd dist
-./YurOTS
+cd dist && ./YurOTS
 ```
 
 `cmake --install` stages a self-contained server folder: the `YurOTS` binary,
-`config.lua`, and the whole `data/` tree (scripts, map, monsters, NPCs, items …) next
-to it. Edit `config.lua` and `data/` freely, then run `./YurOTS` from that folder.
+`config.lua`, and the whole `data/` tree next to it. Start it **from that folder** (the
+server reads `./config.lua` and `./data/` from the current working directory).
 
-- The server reads `./config.lua` and `./data/` from the **current working directory**,
-  so always start it from the staged folder (`cd dist`).
-- It serves **login and game on a single port** (default `7171`).
-- The build vendors **Lua 5.0** statically and links **libxml2** and **Boost.regex**;
-  there is no external database or runtime service to start.
+## Connect / verify
 
-## Connect
-
-Point a **Tibia 7.6** client at `127.0.0.1:7171`. For remote players, set `ip` in
-`config.lua` to your public/host IP (the login step tells the client which IP to use
-for the game connection). You can confirm the server is up without a client:
+Point a **Tibia 7.6** client at `127.0.0.1:7171`. You can confirm the server is up
+without a client:
 
 ```bash
 # OpenTibia status query -> XML server info
@@ -40,13 +68,8 @@ printf '\x06\x00\xff\xff\x69\x6e\x66\x6f' | nc -w 3 127.0.0.1 7171
 
 ## Notes
 
+- This engine serves **login and game on a single port** (default `7171`).
 - World file names in `config.lua` use exact case (`data/world/test.otbm`), required on
   case-sensitive Linux/macOS filesystems.
 - On `*nix` the engine refuses to run as `root` (`_NO_ROOT_PERMISSION_`); run it as a
-  normal user.
-
-## Coming later
-
-Docker / docker-compose, a Pterodactyl egg and a GitHub-Actions release workflow (per-OS
-`.zip` packages) mirror the sister project and are planned as a follow-up step; this pass
-delivers the portable build-from-source path above.
+  normal user (the Docker image already does).

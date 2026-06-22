@@ -22,6 +22,8 @@
 #ifndef __monster_h_
 #define __monster_h_
 
+// modernization: explicit include (GCC/libstdc++ does not leak it transitively)
+#include <cstdint>
 #include "creature.h"
 #include "game.h"
 #include "tile.h"

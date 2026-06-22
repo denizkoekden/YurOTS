@@ -1,0 +1,16 @@
+# Keep the build context small. Note: ots/source/libraries/lua-5.0.2.tar.gz
+# (vendored Lua, needed by the build) is intentionally KEPT.
+.git
+.github
+build/
+build-*/
+dist/
+ots/build/
+ots/dist/
+cmake-build-*/
+_vendored/
+*.zip
+*.exe
+*.dll
+perl/
+.DS_Store

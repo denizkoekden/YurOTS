@@ -1,0 +1,33 @@
+{
+    "_comment": "Pterodactyl egg — YurOTS (Tibia 7.6, modernized). File-based storage (XML accounts/players, OTBM map); no external database. Builds from source on install into the server's file area (config.lua + the whole data/ tree are editable via the file manager / SFTP). Common settings are exposed as variables; leaving one blank keeps your edited config.lua value.",
+    "meta": { "version": "PTDL_v2", "update_url": null },
+    "exported_at": "2026-06-22T00:00:00+00:00",
+    "name": "YurOTS (Tibia 7.6)",
+    "author": "noreply@github.com",
+    "description": "YurOTS, an OpenTibia server for Tibia 7.6 (engine 0.9.4f), modernized to build on current toolchains. File-based storage — ready to run, no external database required.",
+    "features": null,
+    "docker_images": { "Debian": "ghcr.io/pterodactyl/yolks:debian" },
+    "file_denylist": [],
+    "startup": "bash start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\"done\": \"YurOTS Server Running\"}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\nset -e\nexport DEBIAN_FRONTEND=noninteractive\napt-get update\napt-get install -y --no-install-recommends git ca-certificates cmake ninja-build g++ patchelf \\\n    libxml2-dev libboost-regex-dev\nrm -rf /tmp/yurots\ngit clone --depth 1 --branch \"${GIT_REF}\" https://github.com/denizkoekden/YurOTS.git /tmp/yurots\ncd /tmp/yurots\ncmake -S ots -B build -G Ninja -DCMAKE_BUILD_TYPE=Release\ncmake --build build --parallel\ncmake --install build --prefix /mnt/server\ncp pterodactyl/start.sh /mnt/server/start.sh\ncd /mnt/server\nmkdir -p lib\nldd YurOTS | awk '/=>/ {print $3}' | while read -r so; do\n  case \"$(basename \"$so\")\" in\n    libc.so*|libm.so*|libpthread.so*|libdl.so*|librt.so*|ld-linux*|libresolv.so*) ;;\n    *) cp -vL \"$so\" lib/ 2>/dev/null || true ;;\n  esac\ndone\npatchelf --set-rpath '$ORIGIN/lib' YurOTS\nchmod +x YurOTS start.sh 2>/dev/null || true\necho 'YurOTS installed. Default port 7171 (login + game on one port).'\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        { "name": "Git reference", "description": "Branch or tag to build (e.g. master, or a tag like v0.9.4).", "env_variable": "GIT_REF", "default_value": "master", "user_viewable": true, "user_editable": true, "rules": "required|string|max:64" },
+        { "name": "Public IP", "description": "IP the login server advertises to clients (your node's public IP). Blank keeps config.lua's value.", "env_variable": "PUBLIC_IP", "default_value": "", "user_viewable": true, "user_editable": true, "rules": "nullable|string|max:64" },
+        { "name": "World name", "description": "Shown in the character list. Blank keeps config.lua's value.", "env_variable": "WORLD_NAME", "default_value": "", "user_viewable": true, "user_editable": true, "rules": "nullable|string|max:64" },
+        { "name": "World type", "description": "pvp, no-pvp or pvp-enforced. Blank keeps config.lua's value.", "env_variable": "WORLD_TYPE", "default_value": "", "user_viewable": true, "user_editable": true, "rules": "nullable|string|in:pvp,no-pvp,pvp-enforced" },
+        { "name": "Max players", "description": "Maximum simultaneous players. Blank keeps config.lua's value.", "env_variable": "MAX_PLAYERS", "default_value": "", "user_viewable": true, "user_editable": true, "rules": "nullable|integer|max:100000" },
+        { "name": "Experience rate", "description": "Experience multiplier (expmul). Blank keeps config.lua's value.", "env_variable": "RATE_EXP", "default_value": "", "user_viewable": true, "user_editable": true, "rules": "nullable|integer|max:100000" }
+    ]
+}
