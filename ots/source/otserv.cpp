@@ -515,7 +515,7 @@ int main(int argc, char *argv[])
 	sigaction(SIGPIPE, &sigh, NULL);
 #endif
 
-//	LOG_MESSAGE("main", EVENT, 1, "Starting server");
+//	LOG_MESSAGE("main", LOG_EVENT, 1, "Starting server");
 
 
 	// random numbers generator

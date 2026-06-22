@@ -37,13 +37,13 @@ void Logger::logMessage(std::string channel, eLogType type, int level,
 {
 	std::string sType;
 	switch(type){
-		case ERROR:
+		case LOG_ERROR:
 			sType = "error";
 			break;
-		case EVENT:
+		case LOG_EVENT:
 			sType = "event";
 			break;
-		case WARNING:
+		case LOG_WARNING:
 			sType = "warning";
 	}
 	std::cout << "Channel: " << channel << std::endl;

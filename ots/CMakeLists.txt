@@ -101,8 +101,12 @@ target_compile_definitions(YurOTS PRIVATE __NO_HOMEDIR_CONF__)
 
 # Platform macros — define the full set the code branches on, consistently.
 if(WIN32)
+    # WIN32_LEAN_AND_MEAN + NOMINMAX + NOGDI keep <windows.h> (pulled in early via
+    # definitions.h -> winsock2) from polluting the global namespace with macros that
+    # collide with engine identifiers (min/max, and the GDI `ERROR` that clashes with
+    # the eLogType enum).
     target_compile_definitions(YurOTS PRIVATE __WINDOWS__ WIN32 _WIN32
-        WIN32_LEAN_AND_MEAN NOMINMAX)
+        WIN32_LEAN_AND_MEAN NOMINMAX NOGDI)
     if(MSVC)
         target_compile_definitions(YurOTS PRIVATE _CRT_SECURE_NO_WARNINGS)
     endif()

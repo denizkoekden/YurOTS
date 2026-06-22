@@ -35,10 +35,12 @@
 #include <string>
 #include <map>
 
+// modernization: prefixed to avoid clashing with the Win32 <wingdi.h> macro `ERROR`
+// (windows.h is now pulled in early via definitions.h -> winsock2).
 enum eLogType {
-	EVENT,
-	WARNING,
-	ERROR
+	LOG_EVENT,
+	LOG_WARNING,
+	LOG_ERROR
 };
 
 class Logger {
