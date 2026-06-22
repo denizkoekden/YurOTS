@@ -37,6 +37,10 @@
 
 #if defined __WINDOWS__ || defined WIN32
 
+// modernization: pull winsock2 before any <windows.h> (the EWOULDBLOCK alias below
+// needs WSAEWOULDBLOCK, and winsock2 must be included before winsock 1.1).
+#include <winsock2.h>
+
 #define OTSYS_THREAD_RETURN  void
 
 #define EWOULDBLOCK WSAEWOULDBLOCK

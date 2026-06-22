@@ -34,13 +34,22 @@
 #include "tlhelp32.h"
 #endif
 
+// modernization: the SEH stack tracer below (fs-segment SEH chain, x86 CONTEXT
+// registers Eax..Esp, pointer-as-unsigned-long) is 32-bit-x86 + Win32 specific and is
+// never activated in this build (__EXCEPTION_TRACER__ is not defined). Compile it only
+// on 32-bit Windows (1:1 with the original target); on 64-bit Windows the
+// Install/RemoveHandler bodies become no-ops, exactly as the never-called feature implies.
+#if (defined(WIN32) || defined(__WINDOWS__)) && !defined(_WIN64)
+#define OTSERV_SEH_TRACER 1
+#endif
+
 unsigned long max_off;
 unsigned long min_off;
 FunctionMap functionMap;
 bool maploaded = false;
 OTSYS_THREAD_LOCKVAR maploadlock;
 
-#if defined WIN32 || defined __WINDOWS__
+#ifdef OTSERV_SEH_TRACER
 EXCEPTION_DISPOSITION
  __cdecl _SEHHandler(
      struct _EXCEPTION_RECORD *ExceptionRecord,
@@ -83,13 +92,13 @@ bool ExceptionHandler::InstallHandler(){
 		lea eax,[chain]
 		mov fs:[0],eax
 	*/
-	#ifdef __GNUC__
+	#if defined(__GNUC__) && !defined(_WIN64) // modernization: 32-bit-x86 fs-segment SEH only
 	SEHChain *prevSEH;
 	__asm__ ("movl %%fs:0,%%eax;movl %%eax,%0;":"=r"(prevSEH)::"%eax" );
 	chain.prev = prevSEH;
 	chain.SEHfunction = (void*)&_SEHHandler;
 	__asm__("movl %0,%%eax;movl %%eax,%%fs:0;": : "g" (&chain):"%eax");
-	#endif//__GNUC__
+	#endif//__GNUC__ && !_WIN64
 	#endif//WIN32 || defined __WINDOWS__
 	installed = true;
 	return true;
@@ -104,15 +113,15 @@ bool ExceptionHandler::RemoveHandler(){
 		mov eax,[chain.prev]
 		mov fs:[0],eax
 	*/
-	#ifdef __GNUC__
+	#if defined(__GNUC__) && !defined(_WIN64) // modernization: 32-bit-x86 fs-segment SEH only
 	__asm__ ("movl %0,%%eax;movl %%eax,%%fs:0;"::"r"(chain.prev):"%eax" );
-	#endif //__GNUC__
+	#endif //__GNUC__ && !_WIN64
 	#endif //WIN32 || defined __WINDOWS__
 	installed = false;
 	return true;
 }
 
-#if defined WIN32 || defined __WINDOWS__
+#ifdef OTSERV_SEH_TRACER
 EXCEPTION_DISPOSITION
  __cdecl _SEHHandler(
      struct _EXCEPTION_RECORD *ExceptionRecord,
@@ -297,7 +306,7 @@ void printPointer(std::ostream* output,unsigned long p){
 	}
 }
 
-#endif //WIN32 || defined __WINDOWS__
+#endif //OTSERV_SEH_TRACER
 
 #ifdef __GNUC__
 bool ExceptionHandler::LoadMap(){
