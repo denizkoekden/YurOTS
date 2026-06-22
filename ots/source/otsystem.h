@@ -28,6 +28,7 @@
 
 #include <list>
 #include <algorithm>
+#include <chrono>   // modernization: portable millisecond clock for OTSYS_TIME()
 
 #if defined WIN32 || defined __WINDOWS__
 #ifdef __WIN_LOW_FRAG_HEAP__
@@ -38,8 +39,10 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <conio.h>
-#include <sys/timeb.h>
-#include <winsock.h>
+// modernization: winsock.h (1.1) -> winsock2.h (2.2); CMake defines
+// WIN32_LEAN_AND_MEAN so <windows.h> above does not pull the old winsock.h first.
+#include <winsock2.h>
+#include <ws2tcpip.h>
 
 #define OTSYS_CREATE_THREAD(a, b) _beginthread(a, 0, b)
 
@@ -80,13 +83,9 @@ typedef HANDLE OTSYS_THREAD_SIGNALVAR;
 
 inline __int64 OTSYS_TIME()
 {
-  _timeb t;
-#ifdef USING_VISUAL_2005
-  _ftime_s(&t);
-#else
-  _ftime(&t);
-#endif // USING_VISUAL_2005
-  return ((__int64)t.millitm) + ((__int64)t.time) * 1000;
+  // modernization: _ftime/_timeb -> std::chrono (same milliseconds-since-epoch value).
+  return (__int64)std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 inline int OTSYS_THREAD_WAITSIGNAL(OTSYS_THREAD_SIGNALVAR& signal, OTSYS_THREAD_LOCKVAR& lock)
@@ -180,9 +179,10 @@ inline void OTSYS_SLEEP(int t)
 
 inline __int64 OTSYS_TIME()
 {
-  timeb t;
-  ftime(&t);
-  return ((__int64)t.millitm) + ((__int64)t.time) * 1000;
+  // modernization: ftime/timeb (removed from modern glibc, deprecated on macOS)
+  // -> std::chrono (same milliseconds-since-epoch value).
+  return (__int64)std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 #define OTSYS_THREAD_WAITSIGNAL(a,b) pthread_cond_wait(&a, &b)

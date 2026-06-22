@@ -76,7 +76,7 @@ protected:
 	inline bool safeTell(long &pos);
 	//inline bool writeData(void* data, int size, bool unescape);
 public:
-	inline bool FileLoader::writeData(const void* data, int size, bool unescape){
+	inline bool writeData(const void* data, int size, bool unescape){ // modernization: dropped extra `FileLoader::` qualification (ISO C++)
 		for(int i = 0; i < size; ++i) {
 			unsigned char c = *(((unsigned char*)data) + i);
 			if(unescape && (c == NODE_START || c == NODE_END || c == ESCAPE_CHAR)) {
@@ -151,7 +151,16 @@ public:
 	}
 	
 	inline bool GET_ULONG(unsigned long &ret){
-		return GET_VALUE(ret);
+		// modernization: the OTB/OTBM on-disk format stores 32-bit values (it was
+		// written by a 32-bit build where `unsigned long` was 4 bytes). On LP64
+		// `unsigned long` is 8 bytes, so GET_VALUE(ret) would read 8 and desync the
+		// stream. Read a fixed 4-byte uint32_t to keep the byte layout 1:1.
+		uint32_t v;
+		if(!GET_VALUE(v)){
+			return false;
+		}
+		ret = v;
+		return true;
 	}
 	
 	inline bool GET_USHORT(unsigned short &ret){

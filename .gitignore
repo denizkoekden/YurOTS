@@ -82,3 +82,9 @@ ots\\source\\devcpp\\otserv.layout
 *.depend
 *.map
 *.layout
+
+# CMake build + staging output (modernized build)
+ots/build/
+ots/dist/
+build/
+dist/

@@ -78,7 +78,9 @@ bool FileLoader::openFile(const char* filename, bool write, bool caching /*= fal
 		}
 	}
 	else {
-		unsigned long version;
+		// modernization: the on-disk header version is a 32-bit field; read a fixed
+		// uint32_t (sizeof(unsigned long) would read 8 bytes on LP64 and misjudge it).
+		uint32_t version;
 #ifdef USING_VISUAL_2005
 		m_file = NULL;
 		fopen_s(&m_file, filename, "rb");
@@ -86,7 +88,7 @@ bool FileLoader::openFile(const char* filename, bool write, bool caching /*= fal
 		m_file = fopen(filename, "rb");
 #endif //USING_VISUAL_2005
 		if(m_file){
-			fread(&version, sizeof(unsigned long), 1, m_file);
+			fread(&version, sizeof(version), 1, m_file);
 			if(version > 0){
 				fclose(m_file);
 				m_lastError = ERROR_INVALID_FILE_VERSION;
@@ -475,7 +477,10 @@ long FileLoader::loadCacheBlock(unsigned long pos)
 	}
 	if(loading_cache == -1){
 		for(i = 0; i < CACHE_BLOCKS; i++){
-			if((unsigned long)abs(m_cached_data[i].base - base_pos) > 2*m_cache_size){
+			// modernization: abs() on an unsigned-long difference was ambiguous under
+			// modern overload sets; labs() on the signed difference is unambiguous and
+			// yields the same |offset distance| the original intended.
+			if((unsigned long)labs((long)m_cached_data[i].base - (long)base_pos) > 2*m_cache_size){
 				loading_cache = i;
 				break;
 			}

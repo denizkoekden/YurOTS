@@ -22,6 +22,7 @@
 #ifndef __LUASCRIPT_H__
 #define __LUASCRIPT_H__
 
+#include "definitions.h" // modernization: for __int64 (used by exp_t below) on *nix
 #include <string>
 extern "C"
 {
@@ -163,7 +164,7 @@ public:
 
   int OpenFile(const char* file);
   int getField (const char *key);
-  void LuaScript::setField (const char *index, int value);
+  void setField (const char *index, int value); // modernization: dropped extra `LuaScript::` qualification (ISO C++)
   //static version
   static int getField (lua_State *L , const char *key);
   static void setField (lua_State *L, const char *index, int val);
@@ -173,7 +174,7 @@ public:
   std::string getGlobalStringField (std::string var, const int key, const std::string &defString = "");
   // set a var to a val
   int setGlobalString(std::string var, std::string val);
-  int setGlobalNumber(std::string var, int val);
+  int setGlobalNumber(std::string var, intptr_t val); // modernization: pointer-sized so the C++ object address round-trip (addressOf*) survives on 64-bit
 
 protected:
 	std::string luaFile;   // the file we represent

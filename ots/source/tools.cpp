@@ -24,6 +24,7 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <chrono>   // modernization: portable clock for timer()
 
 bool fileExists(char* filename)
 {
@@ -66,7 +67,7 @@ void hexdump(unsigned char *_data, int _len) {
             fprintf(stderr, "   ");
         fprintf(stderr, " ");
         for (i = 0; i < 16 && i < _len; i++)
-            fprintf(stderr, "%c", (_data[i] & 0x70) < 32 ? '·' : _data[i]);
+            fprintf(stderr, "%c", (_data[i] & 0x70) < 32 ? '.' : _data[i]);
         fprintf(stderr, "\n");
     }
 }
@@ -90,72 +91,21 @@ pthread_t *detach(void *(*_fn)(void *), void *_arg) {
 //////////////////////////////////////////////////
 // Upcase a char.
 char upchar(char c) {
-    if (c >= 'a' && c <= 'z')
-        return c - 'a' + 'A';
-    else if (c == 'à')
-        return 'À';
-    else if (c == 'á')
-        return 'Á';
-    else if (c == 'â')
-        return 'Â';
-    else if (c == 'ã')
-        return 'Ã';
-    else if (c == 'ä')
-        return 'Ä';
-    else if (c == 'å')
-        return 'Å';
-    else if (c == 'æ')
-        return 'Æ';
-    else if (c == 'ç')
-        return 'Ç';
-    else if (c == 'è')
-        return 'È';
-    else if (c == 'é')
-        return 'É';
-    else if (c == 'ê')
-        return 'Ê';
-    else if (c == 'ë')
-        return 'Ë';
-    else if (c == 'ì')
-        return 'Ì';
-    else if (c == 'í')
-        return 'Í';
-    else if (c == 'î')
-        return 'Î';
-    else if (c == 'ï')
-        return 'Ï';
-    else if (c == 'ð')
-        return 'Ð';
-    else if (c == 'ñ')
-        return 'Ñ';
-    else if (c == 'ò')
-        return 'Ò';
-    else if (c == 'ó')
-        return 'Ó';
-    else if (c == 'ô')
-        return 'Ô';
-    else if (c == 'õ')
-        return 'Õ';
-    else if (c == 'ö')
-        return 'Ö';
-    else if (c == 'ø')
-        return 'Ø';
-    else if (c == 'ù')
-        return 'Ù';
-    else if (c == 'ú')
-        return 'Ú';
-    else if (c == 'û')
-        return 'Û';
-    else if (c == 'ü')
-        return 'Ü';
-    else if (c == 'ý')
-        return 'Ý';
-    else if (c == 'þ')
-        return 'Þ';
-    else if (c == 'ÿ')
-        return 'ß';
-    else
-        return c;
+    // modernization: the original accented-letter table was stored as CP1252 high
+    // bytes that had been corrupted to U+FFFD somewhere in the archive's history
+    // (every branch collapsed to one value and no longer compiled as char literals).
+    // Reconstructed as the standard Latin-1/CP1252 lowercase->uppercase mapping,
+    // restoring the original Evolution/YurOTS behaviour.
+    unsigned char uc = (unsigned char)c;
+    if (uc >= 'a' && uc <= 'z')
+        return (char)(uc - 'a' + 'A');
+    // 0xE0..0xF6 (a-grave .. o-diaeresis) and 0xF8..0xFE (o-slash .. thorn):
+    // uppercase via -0x20. 0xFF (y-diaeresis) -> 0x9F (Y-diaeresis) in CP1252.
+    if ((uc >= 0xE0 && uc <= 0xF6) || (uc >= 0xF8 && uc <= 0xFE))
+        return (char)(uc - 0x20);
+    if (uc == 0xFF)
+        return (char)0x9F;
+    return c;
 }
 
 //////////////////////////////////////////////////
@@ -185,28 +135,23 @@ int safe_atoi(const char* str)
 
 double timer()
 {
+	// modernization: _ftime/_timeb (Win-only, absent on *nix) -> std::chrono.
+	// Same semantics: first call starts and returns 0.0, the next returns the
+	// elapsed wall-clock seconds and resets.
 	static bool running = false;
-	static _timeb start, end;
+	static std::chrono::system_clock::time_point start;
 
 	if (!running)
 	{
-#ifdef USING_VISUAL_2005
-		_ftime_s(&start);
-#else
-		_ftime(&start);
-#endif //USING_VISUAL_2005
+		start = std::chrono::system_clock::now();
 		running = true;
 		return 0.0;
 	}
 	else
 	{
-#ifdef USING_VISUAL_2005
-		_ftime_s(&end);
-#else
-		_ftime(&end);
-#endif //USING_VISUAL_2005
 		running = false;
-		return (end.time-start.time)+(end.millitm-start.millitm)/1000.0;
+		return std::chrono::duration<double>(
+			std::chrono::system_clock::now() - start).count();
 	}
 }
 
@@ -239,53 +184,31 @@ std::string tickstr(int ticks)
 }
 
 
+// modernization: ltoa/_ultoa/_i64toa/_ui64toa (MinGW/MSVC-only) -> snprintf
+// base-10. Byte-identical decimal output on every platform.
 std::string str(int32_t value)
 {
 	char buf[64];
-#ifdef USING_VISUAL_2005
-	if (_ltoa_s(value, buf, sizeof(buf), 10) == 0)
-		return buf;
-	else
-		return "";
-#else
-	return ltoa(value, buf, 10);
-#endif //USING_VISUAL_2005
+	snprintf(buf, sizeof(buf), "%d", value);
+	return buf;
 }
 
 std::string str(uint32_t value)
 {
 	char buf[64];
-#ifdef USING_VISUAL_2005
-	if (_ultoa_s(value, buf, sizeof(buf), 10) == 0)
-		return buf;
-	else
-		return "";
-#else
-	return _ultoa(value, buf, 10);
-#endif //USING_VISUAL_2005
+	snprintf(buf, sizeof(buf), "%u", value);
+	return buf;
 }
 
 std::string str(int64_t value)
 {
 	char buf[128];
-#ifdef USING_VISUAL_2005
-	if (_i64toa_s(value, buf, sizeof(buf), 10) == 0)
-		return buf;
-	else
-		return "";
-#else
-	return _i64toa(value, buf, 10);
-#endif //USING_VISUAL_2005
+	snprintf(buf, sizeof(buf), "%lld", (long long)value);
+	return buf;
 }
 std::string str(uint64_t value)
 {
 	char buf[128];
-#ifdef USING_VISUAL_2005
-	if (_i64toa_s(value, buf, sizeof(buf), 10) == 0)
-		return buf;
-	else
-		return "";
-#else
-	return _ui64toa(value, buf, 10);
-#endif //USING_VISUAL_2005
+	snprintf(buf, sizeof(buf), "%llu", (unsigned long long)value);
+	return buf;
 }

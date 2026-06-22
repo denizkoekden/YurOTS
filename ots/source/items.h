@@ -23,11 +23,10 @@
 #define __OTSERV_ITEMS_H
 
 
-#ifdef __GNUC__
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
+// modernization: __gnu_cxx::hash_map / stdext::hash_map (deprecated, gone from
+// modern standard libraries) -> std::unordered_map (same average-O(1) lookup; no
+// call site depends on iteration order).
+#include <unordered_map>
 #include <string>
 #include "const76.h"
 #include "itemloader.h"
@@ -147,11 +146,7 @@ public:
 	//bool						isDoorWithLock;
 };
 
-#ifdef __GNUC__
-typedef __gnu_cxx::hash_map<unsigned long, unsigned long> ReverseItemMap;
-#else
-typedef stdext::hash_map<unsigned long, unsigned long> ReverseItemMap;
-#endif
+typedef std::unordered_map<unsigned long, unsigned long> ReverseItemMap; // modernization: was hash_map
 
 class Items {
 public:
@@ -170,11 +165,7 @@ public:
 	static long dwBuildNumber;
 	
 protected:
-	#ifdef __GNUC__
-	typedef __gnu_cxx::hash_map<unsigned short, ItemType*> ItemMap;
-	#else
-	typedef stdext::hash_map<unsigned short, ItemType*> ItemMap;
-	#endif
+	typedef std::unordered_map<unsigned short, ItemType*> ItemMap; // modernization: was hash_map
 	
 	ItemMap items;
 	static ReverseItemMap revItems;

@@ -23,8 +23,11 @@
 #define __definitions_h
 
 
-
-typedef unsigned long long uint64_t;
+// Modernization: the hand-rolled fixed-width typedefs (uint64_t here, uint32/16/8
+// on Windows, and <stdint.h> on *nix below) collided with <stdint.h> on modern
+// LP64 systems (uint64_t is `unsigned long` there, not `unsigned long long`).
+// Use the standard, identical-width <cstdint> on every platform instead.
+#include <cstdint>
 
 #ifdef XML_GCC_FREE
 #define xmlFreeOTSERV(s)	free(s)
@@ -37,10 +40,6 @@ typedef unsigned long long uint64_t;
 #define OTSYS_THREAD_RETURN  void
 
 #define EWOULDBLOCK WSAEWOULDBLOCK
-
-typedef unsigned int uint32_t;
-typedef unsigned short uint16_t;
-typedef unsigned char uint8_t;
 
 #pragma warning(disable:4786) // msvc too long debug names in stl
 
@@ -60,7 +59,8 @@ typedef unsigned char uint8_t;
 
 #define OTSYS_THREAD_RETURN void*
 
-#include <stdint.h>
+// Modernization: keep code that still spells the Win32 type __int64 working on
+// *nix (same width as before). Fixed-width types come from <cstdint> above.
 typedef int64_t __int64;
 
 #endif

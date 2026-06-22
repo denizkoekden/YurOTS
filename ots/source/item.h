@@ -119,7 +119,7 @@ public:
 	void clearSpecialDescription();
 	void setText(std::string desc);
 	void clearText();
-	std::string Item::getText();
+	std::string getText(); // modernization: dropped extra `Item::` qualification (ISO C++)
 
 	virtual int unserialize(xmlNodePtr p);
 	virtual xmlNodePtr serialize();

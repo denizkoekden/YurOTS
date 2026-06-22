@@ -25,7 +25,7 @@
 
 typedef unsigned char attribute_t;
 typedef unsigned short datasize_t;
-typedef unsigned long flags_t;
+typedef uint32_t flags_t; // modernization: on-disk flags are 32-bit (was `unsigned long`, 8 bytes on LP64)
 
 enum itemgroup_t{
 	ITEM_GROUP_NONE = 0,
@@ -186,9 +186,11 @@ struct lightBlock{
 #pragma pack(1)
 
 struct VERSIONINFO{
-	unsigned long dwMajorVersion;
-	unsigned long dwMinorVersion;
-	unsigned long dwBuildNumber;
+	// modernization: 32-bit on-disk fields (was `unsigned long`); on LP64 these
+	// would be 8 bytes each, making sizeof(VERSIONINFO) mismatch the file's record.
+	uint32_t dwMajorVersion;
+	uint32_t dwMinorVersion;
+	uint32_t dwBuildNumber;
 	char CSDVersion[128];
 };
 

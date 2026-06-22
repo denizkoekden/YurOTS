@@ -27,7 +27,7 @@
 #include "game.h"
 
 typedef unsigned char attribute_t;
-typedef unsigned long flags_t;
+typedef uint32_t flags_t; // modernization: on-disk flags are 32-bit (was `unsigned long`, 8 bytes on LP64)
 
 enum tile_flags_t{
 	TILE_PZ = 1,
@@ -65,11 +65,13 @@ enum OTBM_AttrTypes_t{
 #pragma pack(1)
 
 struct OTBM_root_header{
-	unsigned long version;
+	// modernization: 32-bit on-disk fields (was `unsigned long`); under #pragma
+	// pack(1) on LP64 these would be 8 bytes each and desync GET_STRUCT parsing.
+	uint32_t version;
 	unsigned short width;
 	unsigned short height;
-	unsigned long majorVersionItems;
-	unsigned long minorVersionItems;
+	uint32_t majorVersionItems;
+	uint32_t minorVersionItems;
 };
 
 struct OTBM_TeleportDest{
@@ -406,7 +408,7 @@ Item* IOMapOTBM::unserializaItemNode(FileLoader* f, NODE node)
 						container->addItem(item);
 					}
 					else{
-						return false;
+						return NULL; // modernization: function returns Item*, not bool (pre-C++11 "false == null pointer constant")
 					}
 				}
 				item_node = f->getNextNode(item_node, type);

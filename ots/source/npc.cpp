@@ -364,7 +364,7 @@ NpcScript::NpcScript(std::string scriptname, Npc* npc){
 	lua_dofile(luaState, scriptname.c_str());
 	this->loaded=true;
 	this->npc=npc;
-	this->setGlobalNumber("addressOfNpc", (int)npc);
+	this->setGlobalNumber("addressOfNpc", (intptr_t)npc); // modernization: (int) truncated the pointer on 64-bit
 	this->registerFunctions();
 }
 
@@ -497,7 +497,7 @@ int NpcScript::registerFunctions()
 
 Npc* NpcScript::getNpc(lua_State *L){
 	lua_getglobal(L, "addressOfNpc");
-	int val = (int)lua_tonumber(L, -1);
+	intptr_t val = (intptr_t)lua_tonumber(L, -1); // modernization: pointer-sized round-trip (see setGlobalNumber)
 	lua_pop(L,1);
 	Npc* mynpc = (Npc*)val;
 

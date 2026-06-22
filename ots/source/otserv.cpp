@@ -72,7 +72,12 @@
 
 	/* Comment below line if you want to execute otserv with root user (NOT RECOMMENDED) */
 	#define _NO_ROOT_PERMISSION_
+	/* Modernization: read ./config.lua next to the binary on every OS ("download &
+	   run") unless the original $HOME/.otserv/config.lua behaviour is requested.
+	   -D__NO_HOMEDIR_CONF__ (set by CMake) suppresses _HOMEDIR_CONF_. */
+	#ifndef __NO_HOMEDIR_CONF__
 	#define _HOMEDIR_CONF_
+	#endif
 	
 	extern int errno; 
 #endif
